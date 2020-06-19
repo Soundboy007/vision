@@ -1,6 +1,7 @@
 import bisect
 import math
 from fractions import Fraction
+from typing import List
 
 import torch
 from torchvision.io import (

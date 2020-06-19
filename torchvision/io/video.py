@@ -323,20 +323,18 @@ def read_video_timestamps(filename, pts_unit="pts"):
     pts = []
 
     try:
-        container = av.open(filename, metadata_errors="ignore")
+        with av.open(filename, metadata_errors="ignore") as container:
+            if container.streams.video:
+                video_stream = container.streams.video[0]
+                video_time_base = video_stream.time_base
+                try:
+                    pts = _decode_video_timestamps(container)
+                except av.AVError:
+                    warnings.warn(f"Failed decoding frames for file {filename}")
+                video_fps = float(video_stream.average_rate)
     except av.AVError:
         # TODO add a warning
         pass
-    else:
-        if container.streams.video:
-            video_stream = container.streams.video[0]
-            video_time_base = video_stream.time_base
-            try:
-                pts = _decode_video_timestamps(container)
-            except av.AVError:
-                warnings.warn(f"Failed decoding frames for file {filename}")
-            video_fps = float(video_stream.average_rate)
-        container.close()
 
     pts.sort()
 
